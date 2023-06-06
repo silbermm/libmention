@@ -1,11 +1,16 @@
 # Libmention
 
-**TODO: Add description**
+A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
+
+## Goals
+[ ] Ability to [Send](https://www.w3.org/TR/webmention/#sending-webmentions) WebMentions
+[ ] Ability to [Receive](https://www.w3.org/TR/webmention/#receiving-webmentions) Webmentions
+[ ] Configurable storage, defaulting to `ets`
+[ ] Easy local development and management of WebMentions including verification
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `libmention` to your list of dependencies in `mix.exs`:
+Add `libmention` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +20,4 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/libmention>.
-
+## Usage
