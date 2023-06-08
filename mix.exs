@@ -47,7 +47,7 @@ defmodule Libmention.MixProject do
   defp deps do
     [
       {:plug, "~> 1.14"},
-      {:ex_doc, "~> 0.29.1"},
+      {:ex_doc, "~> 0.29"},
       {:recon, "~> 2.5"},
       {:telemetry, "~> 1.2"},
       {:req, "~> 0.3"},
