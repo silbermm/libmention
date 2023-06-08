@@ -10,11 +10,12 @@ defmodule Libmention.Application do
     children = [
       # Starts a worker by calling: Libmention.Worker.start_link(arg)
       # {Libmention.Worker, arg}
+      #{Libmention.Supervisor, [outgoing: []]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Libmention.Supervisor]
+    opts = [strategy: :one_for_one, name: Libmention.AppSupervisor]
     Supervisor.start_link(children, opts)
   end
 end
