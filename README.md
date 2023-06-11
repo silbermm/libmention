@@ -1,4 +1,4 @@
-# Libmention
+# libmention
 
 <!-- MDOC !-->
 
