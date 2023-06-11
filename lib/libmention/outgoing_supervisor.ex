@@ -8,7 +8,8 @@ defmodule Libmention.OutgoingSupervisor do
   end
 
   @impl true
-  def init(_init_arg) do
+  def init(init_arg) do
+    dbg init_arg
     # as part of starting the WebMentionSupervisor, we also
     # start the task of sending web mentions for all articles
     # already written via Tasks

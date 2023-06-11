@@ -28,11 +28,11 @@ defmodule Libmention.Supervisor do
   takes it's own keyword list of options.
   ```elixir
   outgoing: [
-    
+    user_agent: ""
   ]
   ```
   Options include:
-    *
+    * user_agent - customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
   """
 
   use Supervisor
@@ -49,7 +49,7 @@ defmodule Libmention.Supervisor do
 
     children =
       if outgoing_opts do
-        children ++ [Libmention.OutgoingSupervisor.child_spec([outgoing_opts])]
+        children ++ [Libmention.OutgoingSupervisor.child_spec(outgoing_opts)]
       end
 
     Supervisor.init(children, strategy: :one_for_one)
