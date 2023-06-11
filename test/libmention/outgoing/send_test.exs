@@ -56,12 +56,11 @@ defmodule Libmention.Outgoing.SendTest do
       html: html,
       webmention_link: webmention_link
     } do
-
       expect(MockHttp, :head, fn _url, _opts ->
         {:ok,
          %{
            status: 200,
-           headers: [{"content-type", "text/html; charset=UTF-8"}],
+           headers: [{"content-type", "text/html; charset=UTF-8"}]
          }}
       end)
 
@@ -76,7 +75,6 @@ defmodule Libmention.Outgoing.SendTest do
 
       assert ^webmention_link = Send.discover(link)
     end
-
   end
 
   defp generate_html(%{link: link}) do
@@ -91,7 +89,6 @@ defmodule Libmention.Outgoing.SendTest do
 
     %{html: html}
   end
-
 
   defp generate_html_link_in_head(%{webmention_link: webmention_link}) do
     html = ~s"""

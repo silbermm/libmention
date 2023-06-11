@@ -10,7 +10,7 @@ defmodule Libmention.Application do
     children = [
       # Starts a worker by calling: Libmention.Worker.start_link(arg)
       # {Libmention.Worker, arg}
-      #{Libmention.Supervisor, [outgoing: []]}
+      # {Libmention.Supervisor, [outgoing: []]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
