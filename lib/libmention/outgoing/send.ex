@@ -2,10 +2,8 @@ defmodule Libmention.Outgoing.Send do
   @moduledoc """
   See [Sending Webmentions](https://www.w3.org/TR/webmention/#sending-webmentions) for the full spec.
 
-
-  When sending a Webmention from a source_url to a target_url, first we need to
-  fetch the target_url (or send a HEAD request) and look for a <link> or <a> element with a `rel` value of
-  webmention following redirects.
+  Functions for finding links in an html document, discovering webmention support, and sending webmentions
+  from a `source_url` to a `target_url`.
   """
   alias Libmention.HttpApi
 
@@ -15,6 +13,34 @@ defmodule Libmention.Outgoing.Send do
 
   defmodule Error do
     defexception [:message]
+  end
+
+  @doc """
+  Sends a webmention to `endpoint`.
+
+  `source_url` is the URL of the html page containing a link
+  `target_url` is the URL of the page being linked to 
+
+  If the `endpoint supports sending back a location for monitoring
+  the queued request, an `{:ok, url}` will be returned, otherwise
+  just an `:ok` will be returned.
+  """
+  @spec send(String.t(), String.t(), String.t(), keyword()) ::
+          :ok | {:ok, String.t()} | {:error, String.t()}
+  def send(endpoint, source_url, target_url, _opts) do
+    case Req.post(endpoint, form: [source: source_url, target: target_url]) do
+      {:ok, %{status: 201, headers: _headers}} ->
+        {:ok, ""}
+
+      {:ok, %{status: 202, headers: _headers}} ->
+        :ok
+
+      {:ok, %{status: status}} ->
+        {:error, "unexpected response from #{endpoint}, expected 201 or 202, got #{status}"}
+
+      {:error, err} ->
+        {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
+    end
   end
 
   @doc """
