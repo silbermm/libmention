@@ -169,7 +169,7 @@ defmodule Libmention.OutgoingTest do
 
     test "then any other status is not supported", %{link: link, webmention_link: webmention_link} do
       expect(MockHttp, :post, fn _url, _opts ->
-        {:ok, %{ status: 206 }}
+        {:ok, %{status: 206}}
       end)
 
       expect(MockHttp, :post, fn _url, _opts ->

@@ -18,10 +18,8 @@ A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
 All aspects of the library can be used piecemeal or used a more automated system.
 
 ### Sending
-
-### Receiving
 When using piecemeal, the functions worth exploring are in `Libmention.Outgoing`:
-* `Libmention.Outgoing.parse/2` is used to parse an html document for all unique links. The idea here is to pass in the body of your post/note/comment and determine which urls may need to have a webmention sent.
+* `Libmention.Outgoing.parse/1` is used to parse an html document for all unique links. The idea here is to pass in the body of your post/note/comment and determine which urls may need to have a webmention sent.
 * `Libmention.Outgoing.discover/2` takes a link, sends a discovery and determine if webmention is supported at that specific link,
 * `Libmention.Outgoing.send/4` sends that webmention
 
@@ -43,6 +41,7 @@ Then to send for a page,
 Libmention.Supervisor.send(html)
 ```
 
+### Receiving
 
 <!-- MDOC !-->
 

@@ -11,6 +11,8 @@ defmodule Libmention.Outgoing do
   @typep link :: String.t()
   @typep links :: [link()]
 
+  @default_user_agent "libmention-Webmention-Discovery"
+
   defmodule Error do
     defexception [:message]
   end
@@ -21,16 +23,21 @@ defmodule Libmention.Outgoing do
   `source_url` is the URL of the html page containing a link
   `target_url` is the URL of the page being linked to 
 
-  If the `endpoint supports sending back a location for monitoring
+  If the endpoint supports sending back a location for monitoring
   the queued request, an `{:ok, url}` will be returned, otherwise
   just an `:ok` will be returned.
+
+  ### Options
+  * user_agent - defaults to `#{@default_user_agent}`
   """
   @spec send(String.t(), String.t(), String.t(), keyword()) ::
           :ok | {:ok, String.t()} | {:error, String.t()}
-  def send(endpoint, source_url, target_url, _opts \\ []) do
+  def send(endpoint, source_url, target_url, opts \\ []) do
+    user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+
     case HttpApi.post(endpoint,
            form: [source: source_url, target: target_url],
-           user_agent: "libmention-Webmention-Discovery"
+           user_agent: user_agent
          ) do
       {:ok, %{status: 201, headers: headers}} ->
         location = find_location_header(headers)
@@ -87,6 +94,9 @@ defmodule Libmention.Outgoing do
   When making a GET request, if the content type of the document is HTML, looks for an HTML <link> and <a> element with a rel value of webmention. If more than one of these is present, the first HTTP Link header takes precedence, followed by the first <link> or <a> element in document order.
 
   Returns the Webmention link found at the target url.
+
+  ### Options
+  * user_agent - defaults to `#{@default_user_agent}`
   """
   @spec discover(String.t(), keyword()) :: String.t()
   def discover(target_url, opts \\ []) do
@@ -94,8 +104,10 @@ defmodule Libmention.Outgoing do
     if link_in_headers != "", do: link_in_headers, else: get_discover(target_url, opts)
   end
 
-  defp head_discover(target_url, _opts) do
-    case HttpApi.head(target_url, user_agent: "libmention-Webmention-Discovery") do
+  defp head_discover(target_url, opts) do
+    user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+
+    case HttpApi.head(target_url, user_agent: user_agent) do
       {:ok, %{status: 200, headers: [_ | _] = headers}} ->
         Enum.reduce(headers, "", fn
           {"link", link}, acc -> find_rel(link, acc)
@@ -116,8 +128,10 @@ defmodule Libmention.Outgoing do
     end
   end
 
-  defp get_discover(target_url, _opts) do
-    case HttpApi.get(target_url, user_agent: "libmention-Webmention-Discovery") do
+  defp get_discover(target_url, opts) do
+    user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+
+    case HttpApi.get(target_url, user_agent: user_agent) do
       {:ok, %{status: 200, headers: _headers, body: body}} ->
         find_webmention_links(body, target_url)
 
