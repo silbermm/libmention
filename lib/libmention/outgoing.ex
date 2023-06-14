@@ -1,4 +1,4 @@
-defmodule Libmention.Outgoing.Send do
+defmodule Libmention.Outgoing do
   @moduledoc """
   See [Sending Webmentions](https://www.w3.org/TR/webmention/#sending-webmentions) for the full spec.
 
@@ -27,12 +27,16 @@ defmodule Libmention.Outgoing.Send do
   """
   @spec send(String.t(), String.t(), String.t(), keyword()) ::
           :ok | {:ok, String.t()} | {:error, String.t()}
-  def send(endpoint, source_url, target_url, _opts) do
-    case Req.post(endpoint, form: [source: source_url, target: target_url]) do
-      {:ok, %{status: 201, headers: _headers}} ->
-        {:ok, ""}
+  def send(endpoint, source_url, target_url, _opts \\ []) do
+    case HttpApi.post(endpoint,
+           form: [source: source_url, target: target_url],
+           user_agent: "libmention-Webmention-Discovery"
+         ) do
+      {:ok, %{status: 201, headers: headers}} ->
+        location = find_location_header(headers)
+        {:ok, location}
 
-      {:ok, %{status: 202, headers: _headers}} ->
+      {:ok, %{status: 202}} ->
         :ok
 
       {:ok, %{status: status}} ->
@@ -41,6 +45,13 @@ defmodule Libmention.Outgoing.Send do
       {:error, err} ->
         {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
     end
+  end
+
+  defp find_location_header(headers) do
+    Enum.reduce(headers, "", fn
+      {"location", link}, _acc -> link
+      _, acc -> acc
+    end)
   end
 
   @doc """

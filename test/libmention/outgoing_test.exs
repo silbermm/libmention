@@ -1,13 +1,15 @@
-defmodule Libmention.Outgoing.SendTest do
+defmodule Libmention.OutgoingTest do
   use ExUnit.Case
   import Mox
-  alias Libmention.Outgoing.Send
+  alias Libmention.Outgoing
+
+  setup :verify_on_exit!
 
   setup do
     %{
       link: "https://webmention.example/some/post",
       webmention_link: "https://webmention.example/webmention/endpoint",
-      relative_webmention_link: "/with/relative/path",
+      relative_webmention_link: "/with/relative/path"
     }
   end
 
@@ -15,12 +17,12 @@ defmodule Libmention.Outgoing.SendTest do
     setup :generate_html
 
     test "then a plain html string is parsed and links are found", %{html: html, link: link} do
-      assert [^link] = Send.parse(html)
+      assert [^link] = Outgoing.parse(html)
     end
 
     test "then a floki tree is parsed and links are found", %{html: html, link: link} do
       {:ok, tree} = Floki.parse_document(html)
-      assert [^link] = Send.parse(tree)
+      assert [^link] = Outgoing.parse(tree)
     end
   end
 
@@ -47,7 +49,7 @@ defmodule Libmention.Outgoing.SendTest do
          }}
       end)
 
-      assert ^webmention_link = Send.discover(link)
+      assert ^webmention_link = Outgoing.discover(link)
     end
 
     test "then if link not in head request link can be found in a GET request - html head", %{
@@ -72,7 +74,7 @@ defmodule Libmention.Outgoing.SendTest do
          }}
       end)
 
-      assert ^webmention_link = Send.discover(link)
+      assert ^webmention_link = Outgoing.discover(link)
     end
   end
 
@@ -101,18 +103,19 @@ defmodule Libmention.Outgoing.SendTest do
          }}
       end)
 
-      assert ^webmention_link = Send.discover(link)
+      assert ^webmention_link = Outgoing.discover(link)
     end
   end
 
   describe "when discovering target url webmention endpoint with relative link" do
     setup :generate_html_relative_link_in_head
 
-    test "then if link not in head request, relative link can be found in a GET request - html head", %{
-      link: link,
-      html: html,
-      relative_webmention_link: relative_link
-    } do
+    test "then if link not in head request, relative link can be found in a GET request - html head",
+         %{
+           link: link,
+           html: html,
+           relative_webmention_link: relative_link
+         } do
       expect(MockHttp, :head, fn _url, _opts ->
         {:ok,
          %{
@@ -131,7 +134,50 @@ defmodule Libmention.Outgoing.SendTest do
       end)
 
       with_relative = link <> relative_link
-      assert ^with_relative = Send.discover(link)
+      assert ^with_relative = Outgoing.discover(link)
+    end
+  end
+
+  describe "when sending a webmention" do
+    test "then a 201 returns the location for monitoring the queue", %{
+      link: link,
+      webmention_link: webmention_link
+    } do
+      expect(MockHttp, :post, fn _url, _opts ->
+        {:ok,
+         %{
+           status: 201,
+           headers: [{"location", "https://queue.status"}]
+         }}
+      end)
+
+      assert {:ok, "https://queue.status"} =
+               Outgoing.send(link, webmention_link, "https://localhost")
+    end
+
+    test "then a 202 is just an :ok", %{link: link, webmention_link: webmention_link} do
+      expect(MockHttp, :post, fn _url, _opts ->
+        {:ok,
+         %{
+           status: 202,
+           headers: [{"location", "https://queue.status"}]
+         }}
+      end)
+
+      assert :ok = Outgoing.send(link, webmention_link, "https://localhost")
+    end
+
+    test "then any other status is not supported", %{link: link, webmention_link: webmention_link} do
+      expect(MockHttp, :post, fn _url, _opts ->
+        {:ok, %{ status: 206 }}
+      end)
+
+      expect(MockHttp, :post, fn _url, _opts ->
+        {:error, :timeout}
+      end)
+
+      assert {:error, _reason} = Outgoing.send(link, webmention_link, "https://localhost")
+      assert {:error, _reason} = Outgoing.send(link, webmention_link, "https://localhost")
     end
   end
 
