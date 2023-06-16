@@ -1,5 +1,7 @@
 defmodule Libmention.SupervisorTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+  # setting async to false because the outgoing_supervisor_test also
+  # starts the outgoing_supervisor
   doctest Libmention.Supervisor
 
   test "start supervisor for outgoing webmentions" do
