@@ -13,6 +13,7 @@ defmodule Libmention.Supervisor do
   children = [
     ...,
     {Libmention.Supervisor, opts}
+  ]
   ```
 
   ## Options
@@ -28,13 +29,14 @@ defmodule Libmention.Supervisor do
   takes it's own keyword list of options.
   ```elixir
   outgoing: [
-    user_agent: ""
+    user_agent: "",
+    storage: Libmention.EtsStorage
   ]
   ```
   Options include:
-    * user_agent - customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
+    * user_agent - Customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
+    * storage    - The storage behaviour module to use when sending webmentions. Defaults to `Libmention.EtsStorage`. See `Libmention.StorageApi` for more options.
   """
-
   use Supervisor
 
   def start_link(init_arg) do
@@ -49,9 +51,15 @@ defmodule Libmention.Supervisor do
 
     children =
       if outgoing_opts do
+        outgoing_opts = Keyword.put_new(outgoing_opts, :storage, Libmention.EtsStorage)
         children ++ [Libmention.OutgoingSupervisor.child_spec(outgoing_opts)]
       end
 
     Supervisor.init(children, strategy: :one_for_one)
   end
+
+  @doc """
+  Starts a process that parses, validates and sends webmentions.
+  """
+  def send(url, html), do: Libmention.OutgoingSupervisor.process_content(url, html)
 end

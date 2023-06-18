@@ -6,7 +6,7 @@ defmodule Libmention.Outgoing.Worker do
   alias __MODULE__
   alias Libmention.Outgoing
 
-  defstruct [:opts, :html, :source_url, :links, :from_pid]
+  defstruct [:opts, :html, :source_url, :links, :from_pid, :endpoints]
 
   def start_link(opts, _) do
     GenServer.start_link(__MODULE__, opts)
@@ -33,16 +33,49 @@ defmodule Libmention.Outgoing.Worker do
   end
 
   def handle_continue(:discover, %Worker{links: []} = state) do
+    # No links to be found
     send(state.from_pid, :done)
     {:stop, :normal}
   end
 
   def handle_continue(:discover, state) do
-    for link <- state.links do
-      Outgoing.discover(link)
+    endpoints =
+      for link <- state.links, reduce: [] do
+        acc ->
+          # should we send a discover message?
+          # only if we look in storage and determine that the
+          # webmention needs to be sent based:
+          #   * the link
+          #   * the source
+          #   * the content
+
+
+          endpoint = Outgoing.discover(link, state.opts)
+          if endpoint == nil, do: acc, else: [{link, endpoint} | acc]
+      end
+
+    state = %{state | endpoints: endpoints}
+
+    {:noreply, state, {:continue, :send_webmentions}}
+  end
+
+  def handle_continue(:send_webmentions, %Worker{endpoints: []} = state) do
+    send(state.from_pid, :done)
+    {:stop, :normal}
+  end
+
+  def handle_continue(:send_webmentions, state) do
+    res = for {target_url, endpoint} <- state.endpoints, reduce: [] do
+      acc ->
+        endpoint
+        |> Outgoing.send(state.source_url, target_url, state.opts)
+        |> case do
+          {:ok, location} -> [location | acc]
+          _ -> acc
+        end
     end
 
-    send(state.from_pid, :done)
-    {:noreply, state}
+    send(state.from_pid, {:done, res})
+    {:stop, :normal}
   end
 end

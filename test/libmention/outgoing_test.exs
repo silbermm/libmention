@@ -1,5 +1,6 @@
 defmodule Libmention.OutgoingTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+
   import Mox
   alias Libmention.Outgoing
 
