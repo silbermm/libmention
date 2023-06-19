@@ -5,13 +5,12 @@ defmodule Libmention.EtsStorage do
 
   @impl true
   def save(entity) do
-    {:ok, entity}
+    id = entity.source_url <> entity.target_url
+    :ets.insert(table_name(), {id, entity})
   end
 
   @impl true
-  def update(_id, entity) do
-    {:ok, entity}
-  end
+  def update(entity), do: save(entity)
 
   @impl true
   def get(id) when is_binary(id) do
@@ -19,12 +18,23 @@ defmodule Libmention.EtsStorage do
   end
 
   def get(entity) when is_map(entity) do
-    nil
+    id = entity.source_url <> entity.target_url
+    [{_, data}] = :ets.lookup(table_name(), id)
+    data
   end
 
   @impl true
-  def exists?(_entity) do
-    true
+  def exists?(entity) do
+    match = [
+      {{:_, :"$1"},
+       [
+         {:andalso, {:==, {:map_get, :source_url, :"$1"}, entity.source_url},
+          {:==, {:map_get, :target_url, :"$1"}, entity.target_url}}
+       ], [:"$1"]}
+    ]
+
+    exists = :ets.lookup(table_name(), match)
+    !Enum.empty?(exists)
   end
 
   def table_name, do: :webmentions

@@ -23,16 +23,20 @@ When using piecemeal, the functions worth exploring are in `Libmention.Outgoing`
 * `Libmention.Outgoing.discover/2` takes a link, sends a discovery and determines if webmention is supported at that specific link
 * `Libmention.Outgoing.send/4` sends a webmention
 
-When using as a supervised system, add the `Libmention.Supervisor` to your supervision try and configure it for sending.
+When using as a supervised system, add the `Libmention.Supervisor` to your supervision tree and configure it for sending.
 ```elixir
 config = [
-  outgoing: []
+  outgoing: [
+    storage: Libmention.EtsStorage
+  ]
 ]
 children = [
   ...,
   {Libmention.Supervisor, config}
 ]
 ```
+> See `Libmention.Supervisor` for a full list of options
+
 Then to send webmentions for a page or content,
 
 ```elixir

@@ -6,14 +6,13 @@ defmodule Libmention.Outgoing.Worker do
   alias __MODULE__
   alias Libmention.Outgoing
 
-  defstruct [:opts, :html, :source_url, :links, :from_pid, :endpoints]
+  defstruct [:opts, :html, :sha, :source_url, :links, :from_pid, :endpoints]
 
-  def start_link(opts, _) do
-    GenServer.start_link(__MODULE__, opts)
-  end
+  def start_link(opts, _), do: GenServer.start_link(__MODULE__, opts)
 
   @impl true
   def init(opts) do
+    opts = Keyword.put_new(opts, :storage, Libmention.EtsStorage)
     state = %Worker{opts: opts}
     {:ok, state}
   end
@@ -22,7 +21,8 @@ defmodule Libmention.Outgoing.Worker do
 
   @impl true
   def handle_call({:process, source_url, html}, {from_pid, _}, state) do
-    state = %{state | html: html, source_url: source_url, from_pid: from_pid}
+    sha = hash_content(html)
+    state = %{state | html: html, source_url: source_url, from_pid: from_pid, sha: sha}
     {:reply, :processing, state, {:continue, :find_links}}
   end
 
@@ -39,23 +39,36 @@ defmodule Libmention.Outgoing.Worker do
   end
 
   def handle_continue(:discover, state) do
+    storage_api = Keyword.get(state.opts, :storage)
+
     endpoints =
       for link <- state.links, reduce: [] do
         acc ->
           # should we send a discover message?
           # only if we look in storage and determine that the
-          # webmention needs to be sent based:
-          #   * the link
-          #   * the source
-          #   * the content
+          # webmention needs to be sent based on:
+          #   * the target link
+          #   * the source link
+          #   * the content?
+          entity = build_entity(state, link)
+          exists? = storage_api.exists?(entity)
 
+          if !exists? do
+            endpoint = Outgoing.discover(link, state.opts)
 
-          endpoint = Outgoing.discover(link, state.opts)
-          if endpoint == nil, do: acc, else: [{link, endpoint} | acc]
+            if endpoint == nil do
+              _ = save_result(storage_api, entity, :not_found)
+              acc
+            else
+              [{link, endpoint, exists?} | acc]
+            end
+          else
+            # check the sha and see if the content has been updated
+            acc
+          end
       end
 
     state = %{state | endpoints: endpoints}
-
     {:noreply, state, {:continue, :send_webmentions}}
   end
 
@@ -65,17 +78,71 @@ defmodule Libmention.Outgoing.Worker do
   end
 
   def handle_continue(:send_webmentions, state) do
-    res = for {target_url, endpoint} <- state.endpoints, reduce: [] do
-      acc ->
-        endpoint
-        |> Outgoing.send(state.source_url, target_url, state.opts)
-        |> case do
-          {:ok, location} -> [location | acc]
-          _ -> acc
-        end
-    end
+    storage_api = Keyword.get(state.opts, :storage)
+
+    res =
+      for {target_url, endpoint, exists?} <- state.endpoints, reduce: [] do
+        acc ->
+          entity = build_entity(state, target_url, endpoint: endpoint)
+
+          endpoint
+          |> Outgoing.send(state.source_url, target_url, state.opts)
+          |> case do
+            {:ok, location} ->
+              if exists? do
+                update_content(storage_api, entity, :sent)
+              else
+                save_result(storage_api, entity, :sent)
+              end
+
+              [location | acc]
+
+            :ok ->
+              if exists? do
+                update_content(storage_api, entity, :sent)
+              else
+                save_result(storage_api, entity, :sent)
+              end
+
+              acc
+
+            _error ->
+              if exists? do
+                update_content(storage_api, entity, :failed)
+              else
+                save_result(storage_api, entity, :failed)
+              end
+
+              acc
+          end
+      end
 
     send(state.from_pid, {:done, res})
     {:stop, :normal}
   end
+
+  defp build_entity(state, link, opts \\ []) do
+    status = Keyword.get(opts, :status, :initial)
+    endpoint = Keyword.get(opts, :endpoint, nil)
+
+    %{
+      source_url: state.source_url,
+      target_url: link,
+      sha: state.sha,
+      endpoint: endpoint,
+      status: status
+    }
+  end
+
+  defp save_result(storage_api, entity, status) do
+    entity = Map.put(entity, :status, status)
+    storage_api.save(entity)
+  end
+
+  defp update_content(storage_api, entity, status) do
+    entity = Map.put(entity, :status, status)
+    storage_api.update(entity)
+  end
+
+  defp hash_content(html), do: :crypto.hash(:sha512, html) |> Base.encode64()
 end

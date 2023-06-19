@@ -32,7 +32,7 @@ defmodule Libmention.StorageApi do
   This is called when the content of a webmention (sha) changes and we've
   already and we sent another one.
   """
-  @callback update(id(), entity()) :: {:ok, term()} | {:error | term()} 
+  @callback update(entity()) :: {:ok, term()} | {:error | term()} 
 
   @doc """
 
@@ -43,4 +43,5 @@ defmodule Libmention.StorageApi do
 
   """
   @callback get(id() | entity()) :: term() | nil
+
 end

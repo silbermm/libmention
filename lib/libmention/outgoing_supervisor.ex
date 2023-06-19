@@ -11,9 +11,11 @@ defmodule Libmention.OutgoingSupervisor do
   @impl true
   def init(opts) do
     storage = Keyword.get(opts, :storage)
+
     if storage == Libmention.EtsStorage do
-      :ets.new(Libmention.EtsStorage.table_name, [:public])
+      :ets.new(Libmention.EtsStorage.table_name(), [:public, :named_table])
     end
+
     DynamicSupervisor.init(strategy: :one_for_one, extra_arguments: [opts])
   end
 
