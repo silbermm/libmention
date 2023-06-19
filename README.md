@@ -5,9 +5,9 @@
 A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
 
 ## Goals
-* [ ] [Send](https://www.w3.org/TR/webmention/#sending-webmentions) WebMentions (in progress)
-* [ ] [Receive](https://www.w3.org/TR/webmention/#receiving-webmentions) Webmentions
-* [ ] Configurable storage, defaulting to `ets`
+* [x] [Send](https://www.w3.org/TR/webmention/#sending-webmentions) WebMentions
+* [ ] [Receive](https://www.w3.org/TR/webmention/#receiving-webmentions) Webmentions (in progress)
+* [x] Configurable storage, defaulting to `ets`
 * [ ] Easy local development and management of WebMentions including:
   * [ ] Accept
   * [ ] Decline
