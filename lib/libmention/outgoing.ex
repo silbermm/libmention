@@ -98,7 +98,7 @@ defmodule Libmention.Outgoing do
   ### Options
   * user_agent - defaults to `#{@default_user_agent}`
   """
-  @spec discover(String.t(), keyword()) :: String.t()
+  @spec discover(String.t(), keyword()) :: String.t() | nil
   def discover(target_url, opts \\ []) do
     link_in_headers = head_discover(target_url, opts)
     if link_in_headers != "", do: link_in_headers, else: get_discover(target_url, opts)

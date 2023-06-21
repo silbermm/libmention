@@ -44,28 +44,11 @@ defmodule Libmention.Outgoing.Worker do
     endpoints =
       for link <- state.links, reduce: [] do
         acc ->
-          # should we send a discover message?
-          # only if we look in storage and determine that the
-          # webmention needs to be sent based on:
-          #   * the target link
-          #   * the source link
-          #   * the content?
           entity = build_entity(state, link)
           exists? = storage_api.exists?(entity)
-
-          if !exists? do
-            endpoint = Outgoing.discover(link, state.opts)
-
-            if endpoint == nil do
-              _ = save_result(storage_api, entity, :not_found)
-              acc
-            else
-              [{link, endpoint, exists?} | acc]
-            end
-          else
-            # check the sha and see if the content has been updated
-            acc
-          end
+          dbg entity
+          dbg exists?
+          handle_existing_or_changed_entity(entity, exists?, state, link, acc)
       end
 
     state = %{state | endpoints: endpoints}
@@ -119,6 +102,31 @@ defmodule Libmention.Outgoing.Worker do
 
     send(state.from_pid, {:done, res})
     {:stop, :normal}
+  end
+
+  defp handle_existing_or_changed_entity(entity, false, state, link, acc) do
+    storage_api = Keyword.get(state.opts, :storage)
+    endpoint = Outgoing.discover(link, state.opts)
+
+    if is_nil(endpoint) do
+      _ = save_result(storage_api, entity, :not_found)
+      acc
+    else
+      [{link, endpoint, false} | acc]
+    end
+  end
+
+  defp handle_existing_or_changed_entity(entity, true, state, link, acc) do
+    storage_api = Keyword.get(state.opts, :storage)
+
+    # check the sha and see if the content has been updated
+    from_storage = storage_api.get(entity)
+
+    if from_storage.sha == state.sha do
+      acc
+    else
+      [{link, from_storage.endpoint, true} | acc]
+    end
   end
 
   defp build_entity(state, link, opts \\ []) do

@@ -58,7 +58,12 @@ defmodule Libmention.Outgoing.WorkerTest do
     setup [:expect_invalid_get_request]
     setup [:expect_valid_post_request]
 
-    test "saves successfully sent webmention", %{pid: pid, url: url, html: html, good_webmention_url: good_url} do
+    test "saves successfully sent webmention", %{
+      pid: pid,
+      url: url,
+      html: html,
+      good_webmention_url: good_url
+    } do
       Worker.process(pid, url, html)
       assert_receive {:done, _}
 
@@ -68,11 +73,17 @@ defmodule Libmention.Outgoing.WorkerTest do
     end
   end
 
- describe "webmention storage for invalid webmentions" do
+  describe "webmention storage for invalid webmentions" do
     setup [:expect_invalid_head_request, :expect_invalid_head_request]
     setup [:expect_invalid_get_request, :expect_invalid_get_request]
 
-    test "saves not found webmentions", %{pid: pid, url: url, html: html, good_webmention_url: good_url, bad_webmention_url: bad_url} do
+    test "saves not found webmentions", %{
+      pid: pid,
+      url: url,
+      html: html,
+      good_webmention_url: good_url,
+      bad_webmention_url: bad_url
+    } do
       Worker.process(pid, url, html)
       assert_receive :done
 
@@ -84,8 +95,7 @@ defmodule Libmention.Outgoing.WorkerTest do
       entity = EtsStorage.get(%{source_url: url, target_url: bad_url})
       assert entity.status == :not_found
     end
-  end
-
+  end 
 
   def create_ets_table(_context) do
     :ets.new(EtsStorage.table_name(), [:public, :named_table])

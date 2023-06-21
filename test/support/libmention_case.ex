@@ -21,12 +21,22 @@ defmodule Libmention.Case do
     </body>
     """
 
+    updated_html = """
+    <html>
+    <body>
+      <a href="#{good_webmention_url}"> Good Webmention </a> 
+      <a href="#{bad_webmention_url}"> Bad Webmention </a> 
+      <h2> updated </h2>
+    </body>
+    """
+
     %{
       url: url,
       good_webmention_url: good_webmention_url,
       bad_webmention_url: bad_webmention_url,
       endpoint: endpoint,
-      html: html
+      html: html,
+      updated_html: updated_html
     }
   end
 end
