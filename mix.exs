@@ -4,7 +4,7 @@ defmodule Libmention.MixProject do
   def project do
     [
       app: :libmention,
-      version: "0.1.1",
+      version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -16,6 +16,13 @@ defmodule Libmention.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  # Run "mix help compile.app" to learn about applications.
+  def application do
+    [
+      extra_applications: [:logger, :castore],
+    ]
+  end
 
   defp package() do
     [
@@ -42,7 +49,7 @@ defmodule Libmention.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:plug, "~> 1.14"},
+      {:plug_cowboy, "~> 2.0"},
       {:ex_doc, "~> 0.29"},
       {:recon, "~> 2.5"},
       {:telemetry, "~> 1.2"},

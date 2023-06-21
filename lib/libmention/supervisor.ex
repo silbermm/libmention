@@ -30,12 +30,15 @@ defmodule Libmention.Supervisor do
   ```elixir
   outgoing: [
     user_agent: "",
-    storage: Libmention.EtsStorage
+    storage: Libmention.EtsStorage,
+    proxy: [port: 8082]
   ]
   ```
   Options include:
-    * user_agent - Customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
-    * storage    - The storage behaviour module to use when sending webmentions. Defaults to `Libmention.EtsStorage`. See `Libmention.StorageApi` for more options.
+    * user_agent - String - Customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
+    * storage    - Module - The storage behaviour module to use when sending webmentions. Defaults to `Libmention.EtsStorage`. See `Libmention.StorageApi` for more options.
+    * proxy      - Keyword List - This is useful for local development only. If enabled, it starts a Plug application on the requested port `proxy: [port: 8082]` that all sent webmentions go to and shows a dashboard with their payloads. See `Libmention.Outgoing.Proxy` for more information.
+
   """
   use Supervisor
 
@@ -61,5 +64,5 @@ defmodule Libmention.Supervisor do
   @doc """
   Starts a process that parses, validates and sends webmentions.
   """
-  def send(url, html), do: Libmention.OutgoingSupervisor.process_content(url, html)
+  def send(url, html), do: Libmention.Outgoing.WorkerSupervisor.process_content(url, html)
 end

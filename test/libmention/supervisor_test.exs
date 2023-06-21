@@ -89,6 +89,24 @@ defmodule Libmention.SupervisorTest do
     end
   end
 
+  describe "outgoing with proxy enabled" do
+    @describetag outgoing: true
+    @describetag proxy: true
+
+    test "proxy supervisor starts" do
+      assert Process.whereis(Libmention.Outgoing.Proxy)
+    end
+  end
+
+  def start_supervisor(%{outgoing: true, proxy: true}) do
+    pid =
+      start_supervised!(
+        {Libmention.Supervisor, [outgoing: [user_agent: "test-libmention", proxy: [port: 8082]]]}
+      )
+
+    %{pid: pid}
+  end
+
   def start_supervisor(%{outgoing: true}) do
     pid = start_supervised!({Libmention.Supervisor, [outgoing: [user_agent: "test-libmention"]]})
     %{pid: pid}

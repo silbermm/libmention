@@ -1,37 +1,24 @@
 defmodule Libmention.OutgoingSupervisor do
   @moduledoc false
 
-  use DynamicSupervisor
+  use Supervisor
 
-  @typep url :: String.t()
-  @typep html :: String.t() | Floki.html_tree()
-
-  def start_link(opts), do: DynamicSupervisor.start_link(__MODULE__, opts, name: __MODULE__)
-
-  @impl true
-  def init(opts) do
-    storage = Keyword.get(opts, :storage)
-
-    if storage == Libmention.EtsStorage do
-      :ets.new(Libmention.EtsStorage.table_name(), [:public, :named_table])
-    end
-
-    DynamicSupervisor.init(strategy: :one_for_one, extra_arguments: [opts])
+  def start_link(init_arg) do
+    Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  @doc """
-  Starts a worker that finds links, discovers webmention endpoints and sends webmentions.
-  """
-  @spec process_content(url(), html()) ::
-          {:ok, pid()} | :ignore | {:error, term()} | {:ok, pid(), term()}
-  def process_content(url, html) do
-    case DynamicSupervisor.start_child(__MODULE__, Libmention.Outgoing.Worker) do
-      {:ok, pid} ->
-        Libmention.Outgoing.Worker.process(pid, url, html)
-        {:ok, pid}
+  @impl true
+  def init(args) do
+    proxy = Keyword.get(args, :proxy)
 
-      error ->
-        error
-    end
+    children =
+      if proxy do
+        [Libmention.Outgoing.Proxy.child_spec(proxy)]
+      else
+        []
+      end
+
+    children = children ++ [Libmention.Outgoing.WorkerSupervisor.child_spec(args)]
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
