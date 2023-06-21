@@ -46,8 +46,6 @@ defmodule Libmention.Outgoing.Worker do
         acc ->
           entity = build_entity(state, link)
           exists? = storage_api.exists?(entity)
-          dbg entity
-          dbg exists?
           handle_existing_or_changed_entity(entity, exists?, state, link, acc)
       end
 
@@ -118,11 +116,10 @@ defmodule Libmention.Outgoing.Worker do
 
   defp handle_existing_or_changed_entity(entity, true, state, link, acc) do
     storage_api = Keyword.get(state.opts, :storage)
-
-    # check the sha and see if the content has been updated
     from_storage = storage_api.get(entity)
 
-    if from_storage.sha == state.sha do
+    # check the endpoint first then the sha and see if the content has been updated
+    if is_nil(from_storage.endpoint) || from_storage.sha == state.sha do
       acc
     else
       [{link, from_storage.endpoint, true} | acc]

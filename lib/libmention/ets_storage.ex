@@ -29,7 +29,7 @@ defmodule Libmention.EtsStorage do
   def exists?(entity) do
     id = entity.source_url <> entity.target_url
     res = :ets.lookup(table_name(), id)
-    !Enum.empty?(res) 
+    !Enum.empty?(res)
   end
 
   def table_name, do: :webmentions

@@ -1,5 +1,5 @@
 defmodule Libmention.HttpFactory do
-  @moduledoc  false
+  @moduledoc false
   import Mox
 
   def expect_valid_get_request(%{good_webmention_url: good_webmention_url, endpoint: endpoint}) do
@@ -95,7 +95,7 @@ defmodule Libmention.HttpFactory do
 
     :ok
   end
-  
+
   def expect_invalid_post_request(%{endpoint: endpoint}) do
     expect(MockHttp, :post, fn ^endpoint, _opts ->
       {:ok,

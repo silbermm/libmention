@@ -95,7 +95,7 @@ defmodule Libmention.Outgoing.WorkerTest do
       entity = EtsStorage.get(%{source_url: url, target_url: bad_url})
       assert entity.status == :not_found
     end
-  end 
+  end
 
   def create_ets_table(_context) do
     :ets.new(EtsStorage.table_name(), [:public, :named_table])
