@@ -2,16 +2,16 @@ defmodule Libmention.Outgoing.ProxyTest do
   use Libmention.Case
   use Plug.Test
 
-  alias Libmention.Outgoing.Proxy 
+  alias Libmention.Outgoing.Proxy
   alias Libmention.Outgoing.Proxy.Router
 
   setup :start_proxy
-  
+
   test "sent" do
     conn =
       :get
       |> conn("/sent", "")
-      |> Router.call([])
+      |> Router.call(table: Proxy.proxy_table())
 
     assert conn.state == :sent
     assert conn.status == 200

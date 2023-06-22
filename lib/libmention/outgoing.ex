@@ -39,10 +39,12 @@ defmodule Libmention.Outgoing do
 
     if proxy do
       port = Keyword.get(proxy, :port, 8082)
+
       HttpApi.post("http://localhost:#{port}/webmentions?proxy_for=#{endpoint}",
         form: [source: source_url, target: target_url],
         user_agent: user_agent
       )
+
       :ok
     else
       case HttpApi.post(endpoint,

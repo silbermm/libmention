@@ -25,7 +25,8 @@ defmodule Libmention.Outgoing.OutgoingWithProxyTest do
       _ = Outgoing.send(endpoint, url, webmention_link, opts)
 
       # validate that the proxy ets table has the entry
-      assert [{^endpoint, %{source: ^url, target: ^webmention_link}}] = :ets.lookup(Proxy.proxy_table(), endpoint)
+      assert [{^endpoint, %{source: ^url, target: ^webmention_link}}] =
+               :ets.lookup(Proxy.proxy_table(), endpoint)
     end
   end
 

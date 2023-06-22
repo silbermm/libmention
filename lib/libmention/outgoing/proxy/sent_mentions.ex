@@ -1,13 +1,15 @@
 defmodule Libmention.Outgoing.Proxy.SentMentions do
   @moduledoc false
-  alias Libmention.Outgoing.Proxy
+  # alias Libmention.Outgoing.Proxy
   import Plug.Conn
 
   def init(opts), do: opts
 
   def call(conn, _opts) do
+    table = Keyword.get(conn.assigns.proxy_opts, :table)
+
     # Get available webmentions
-    all = :ets.tab2list(Proxy.proxy_table())
+    all = :ets.tab2list(table)
     group = Enum.group_by(all, fn {endpoint, _} -> endpoint end, fn {_, data} -> data end)
 
     html = ~s"""
@@ -20,15 +22,15 @@ defmodule Libmention.Outgoing.Proxy.SentMentions do
       </head>
       <body>
         #{for {key, values} <- group do
-          ~s"""
-            <details> 
-              <summary> #{key} </summary>
-              <p>
-                #{table_for(values)} 
-              </p>
-            </details>
-          """
-        end}
+      ~s"""
+        <details> 
+          <summary> #{key} </summary>
+          <p>
+            #{table_for(values)} 
+          </p>
+        </details>
+      """
+    end}
       </body>
     </html>
     """
@@ -48,14 +50,14 @@ defmodule Libmention.Outgoing.Proxy.SentMentions do
       </thead>
       <tbody>
         #{for %{source: source, target: target, timestamp: timestamp} <- entries do
-          ~s"""
-          <tr>
-            <td> #{source} </td>
-            <td> #{target} </td>
-            <td> #{timestamp} </td>
-          </tr>
-          """
-        end}
+      ~s"""
+      <tr>
+        <td> #{source} </td>
+        <td> #{target} </td>
+        <td> #{timestamp} </td>
+      </tr>
+      """
+    end}
       </tbody>
     </table>
     """

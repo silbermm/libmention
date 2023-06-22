@@ -36,7 +36,10 @@ defmodule Libmention.Outgoing.Proxy do
     port = Keyword.get(args, :port, @default_port)
 
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Libmention.Outgoing.Proxy.Router, options: [port: port]}
+      {Plug.Cowboy,
+       scheme: :http,
+       plug: {Libmention.Outgoing.Proxy.Router, table: proxy_table()},
+       options: [port: port]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

@@ -1,4 +1,5 @@
 defmodule Libmention.Outgoing.Proxy.HandleMentions do
+  @moduledoc false
   import Plug.Conn
 
   def init(opts), do: opts
