@@ -180,7 +180,7 @@ defmodule Libmention.OutgoingTest do
       assert {:error, _reason} = Outgoing.send(link, webmention_link, "https://localhost")
       assert {:error, _reason} = Outgoing.send(link, webmention_link, "https://localhost")
     end
-  end
+  end 
 
   defp generate_html(%{link: link}) do
     html = ~s"""

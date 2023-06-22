@@ -13,22 +13,30 @@ defmodule Libmention.Outgoing.Proxy do
 
   The proxy also makes available a small web-based dashboard where you can inspect
   the webmentions you sent including their payload.
+
+  By default, the proxy exposes a web interface at [http://localhost:8082/sent](http://localhost:8082/sent)
+  but the port is configurable via the `Libmention.Supervisor` Outgoing options.
   """
   use Supervisor
 
   @default_port 8082
 
+  @doc false
+  def proxy_table, do: :proxy
+
+  @doc false
   def start_link(init_arg) do
+    :ets.new(proxy_table(), [:public, :duplicate_bag, :named_table])
     Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
+  @doc false
   @impl true
   def init(args) do
     port = Keyword.get(args, :port, @default_port)
 
     children = [
-      {Plug.Cowboy,
-       scheme: :http, plug: Libmention.Outgoing.Proxy.Router, options: [port: port]}
+      {Plug.Cowboy, scheme: :http, plug: Libmention.Outgoing.Proxy.Router, options: [port: port]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

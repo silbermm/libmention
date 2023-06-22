@@ -29,28 +29,39 @@ defmodule Libmention.Outgoing do
 
   ### Options
   * user_agent - defaults to `#{@default_user_agent}`
+  * proxy      - useful when `Libmention.Outgoing.Proxy` is configured
   """
   @spec send(String.t(), String.t(), String.t(), keyword()) ::
           :ok | {:ok, String.t()} | {:error, String.t()}
   def send(endpoint, source_url, target_url, opts \\ []) do
     user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+    proxy = Keyword.get(opts, :proxy, nil)
 
-    case HttpApi.post(endpoint,
-           form: [source: source_url, target: target_url],
-           user_agent: user_agent
-         ) do
-      {:ok, %{status: 201, headers: headers}} ->
-        location = find_location_header(headers)
-        {:ok, location}
+    if proxy do
+      port = Keyword.get(proxy, :port, 8082)
+      HttpApi.post("http://localhost:#{port}/webmentions?proxy_for=#{endpoint}",
+        form: [source: source_url, target: target_url],
+        user_agent: user_agent
+      )
+      :ok
+    else
+      case HttpApi.post(endpoint,
+             form: [source: source_url, target: target_url],
+             user_agent: user_agent
+           ) do
+        {:ok, %{status: 201, headers: headers}} ->
+          location = find_location_header(headers)
+          {:ok, location}
 
-      {:ok, %{status: 202}} ->
-        :ok
+        {:ok, %{status: 202}} ->
+          :ok
 
-      {:ok, %{status: status}} ->
-        {:error, "unexpected response from #{endpoint}, expected 201 or 202, got #{status}"}
+        {:ok, %{status: status}} ->
+          {:error, "unexpected response from #{endpoint}, expected 201 or 202, got #{status}"}
 
-      {:error, err} ->
-        {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
+        {:error, err} ->
+          {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
+      end
     end
   end
 

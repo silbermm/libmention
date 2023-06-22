@@ -7,10 +7,10 @@ defmodule Libmention.Outgoing.ProxyTest do
 
   setup :start_proxy
   
-  test "returns data" do
+  test "sent" do
     conn =
       :get
-      |> conn("/", "")
+      |> conn("/sent", "")
       |> Router.call([])
 
     assert conn.state == :sent
