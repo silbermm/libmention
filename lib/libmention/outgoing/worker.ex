@@ -35,7 +35,7 @@ defmodule Libmention.Outgoing.Worker do
   def handle_continue(:discover, %Worker{links: []} = state) do
     # No links to be found
     send(state.from_pid, :done)
-    {:stop, :normal}
+    {:stop, :normal, state}
   end
 
   def handle_continue(:discover, state) do
@@ -55,7 +55,7 @@ defmodule Libmention.Outgoing.Worker do
 
   def handle_continue(:send_webmentions, %Worker{endpoints: []} = state) do
     send(state.from_pid, :done)
-    {:stop, :normal}
+    {:stop, :normal, state}
   end
 
   def handle_continue(:send_webmentions, state) do
@@ -99,7 +99,7 @@ defmodule Libmention.Outgoing.Worker do
       end
 
     send(state.from_pid, {:done, res})
-    {:stop, :normal}
+    {:stop, :normal, state}
   end
 
   defp handle_existing_or_changed_entity(entity, false, state, link, acc) do
