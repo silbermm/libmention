@@ -71,6 +71,7 @@ defmodule Libmention.MixProject do
         "CHANGELOG.md": [filename: "changelog", title: "Changelog"],
         LICENSE: [filename: "LICENSE", title: "License"]
       ],
+      logo: "libmention_simple.png",
       authors: ["Matt Silbernagel"],
       before_closing_body_tag: &before_closing_body_tag/1
     ]

@@ -1,4 +1,4 @@
-# libmention
+![Libmention Logo](./libmention.png "libmention")
 
 <!-- MDOC !-->
 
