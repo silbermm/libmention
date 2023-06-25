@@ -28,7 +28,7 @@ defmodule Libmention.MixProject do
     [
       maintainers: ["Matt Silbernagel"],
       description: description(),
-      links: %{:GitHub => "https://github.com/silbermm/libmention"},
+      links: %{:GitHub => "https://github.com/silbermm/libmention", :Webmentions => "https://www.w3.org/TR/webmention/"},
       licenses: ["Apache-License-2.0"],
       files: [
         "lib",
