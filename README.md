@@ -4,6 +4,8 @@
 
 A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
 
+[Read the documentation](https://hexdocs.pm/libmention/Libmention.html)
+
 ## Goals
 * [x] [Send](https://www.w3.org/TR/webmention/#sending-webmentions) WebMentions
 * [ ] [Receive](https://www.w3.org/TR/webmention/#receiving-webmentions) Webmentions (in progress)
