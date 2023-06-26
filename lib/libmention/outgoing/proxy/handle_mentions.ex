@@ -9,7 +9,7 @@ defmodule Libmention.Outgoing.Proxy.HandleMentions do
 
     _ =
       :ets.insert(
-        Libmention.Outgoing.Proxy.proxy_table(),
+        Keyword.get(conn.assigns.proxy_opts, :webmentions_table),
         {for, %{source: source, target: target, timestamp: DateTime.utc_now()}}
       )
 

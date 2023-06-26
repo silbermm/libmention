@@ -31,14 +31,16 @@ defmodule Libmention.Supervisor do
   outgoing: [
     user_agent: "",
     storage: Libmention.EtsStorage,
-    proxy: [port: 8082]
+    proxy: [
+      port: 8082,
+      host: "localhost"
+    ]
   ]
   ```
   Options include:
     * user_agent - String - Customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
-    * storage    - Module - The storage behaviour module to use when sending webmentions. Defaults to `Libmention.EtsStorage`. See `Libmention.StorageApi` for more options.
-    * proxy      - Keyword List - This is useful for local development only. If enabled, it starts a Plug application on the requested port `proxy: [port: 8082]` that all sent webmentions go to and shows a dashboard with their payloads. See `Libmention.Outgoing.Proxy` for more information.
-
+    * storage    - Module - The storage behaviour module to use when sending webmentions. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
+    * proxy      - Keyword List - This is useful for local development only. If enabled, it starts a Plug application on the requested port `proxy: [port: 8082]` that all sent webmentions go to and shows a dashboard with their payloads. See `Libmention.Outgoing.Proxy` for a full explanation and other options available.
   """
   use Supervisor
 

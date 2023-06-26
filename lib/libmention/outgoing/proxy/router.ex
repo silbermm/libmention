@@ -2,6 +2,7 @@ defmodule Libmention.Outgoing.Proxy.Router do
   @moduledoc false
   use Plug.Router, copy_opts_to_assign: :proxy_opts
 
+  alias Libmention.Outgoing.Proxy.HandleDiscover
   alias Libmention.Outgoing.Proxy.HandleMentions
   alias Libmention.Outgoing.Proxy.SentMentions
 
@@ -13,6 +14,9 @@ defmodule Libmention.Outgoing.Proxy.Router do
 
   forward("/sent", to: SentMentions)
   post("/webmentions", to: HandleMentions)
+
+  head("/discover", to: HandleDiscover)
+  get("/discover", to: HandleDiscover)
 
   get "/" do
     send_resp(conn, 200, "Welcome")

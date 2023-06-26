@@ -36,35 +36,41 @@ defmodule Libmention.Outgoing do
   def send(endpoint, source_url, target_url, opts \\ []) do
     user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
     proxy = Keyword.get(opts, :proxy, nil)
+    endpoint = build_endpoint(endpoint, proxy, :send)
 
-    if proxy do
-      port = Keyword.get(proxy, :port, 8082)
+    case HttpApi.post(endpoint,
+           form: [source: source_url, target: target_url],
+           user_agent: user_agent
+         ) do
+      {:ok, %{status: 201, headers: headers}} ->
+        location = find_location_header(headers)
+        {:ok, location}
 
-      HttpApi.post("http://localhost:#{port}/webmentions?proxy_for=#{endpoint}",
-        form: [source: source_url, target: target_url],
-        user_agent: user_agent
-      )
+      {:ok, %{status: 202}} ->
+        :ok
 
-      :ok
-    else
-      case HttpApi.post(endpoint,
-             form: [source: source_url, target: target_url],
-             user_agent: user_agent
-           ) do
-        {:ok, %{status: 201, headers: headers}} ->
-          location = find_location_header(headers)
-          {:ok, location}
+      {:ok, %{status: status}} ->
+        {:error, "unexpected response from #{endpoint}, expected 201 or 202, got #{status}"}
 
-        {:ok, %{status: 202}} ->
-          :ok
-
-        {:ok, %{status: status}} ->
-          {:error, "unexpected response from #{endpoint}, expected 201 or 202, got #{status}"}
-
-        {:error, err} ->
-          {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
-      end
+      {:error, err} ->
+        {:error, "Unexpected error from #{endpoint} | #{inspect(err)}"}
     end
+  end
+
+  defp build_endpoint(endpoint, nil, _action), do: endpoint
+
+  defp build_endpoint(endpoint, opts, :send) do
+    port = Keyword.get(opts, :port, 8082)
+    host = Keyword.get(opts, :host, "http://localhost")
+
+    "#{host}:#{port}/webmentions?proxy_for=#{endpoint}"
+  end
+
+  defp build_endpoint(endpoint, opts, :discover) do
+    port = Keyword.get(opts, :port, 8082)
+    host = Keyword.get(opts, :host, "http://localhost")
+
+    "#{host}:#{port}/discover?proxy_for=#{endpoint}"
   end
 
   defp find_location_header(headers) do
@@ -119,8 +125,10 @@ defmodule Libmention.Outgoing do
 
   defp head_discover(target_url, opts) do
     user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+    proxy = Keyword.get(opts, :proxy, nil)
+    endpoint = build_endpoint(target_url, proxy, :discover)
 
-    case HttpApi.head(target_url, user_agent: user_agent) do
+    case HttpApi.head(endpoint, user_agent: user_agent) do
       {:ok, %{status: 200, headers: [_ | _] = headers}} ->
         Enum.reduce(headers, "", fn
           {"link", link}, acc -> find_rel(link, acc)
@@ -143,8 +151,10 @@ defmodule Libmention.Outgoing do
 
   defp get_discover(target_url, opts) do
     user_agent = Keyword.get(opts, :user_agent, @default_user_agent)
+    proxy = Keyword.get(opts, :proxy, nil)
+    endpoint = build_endpoint(target_url, proxy, :discover)
 
-    case HttpApi.get(target_url, user_agent: user_agent) do
+    case HttpApi.get(endpoint, user_agent: user_agent) do
       {:ok, %{status: 200, headers: _headers, body: body}} ->
         find_webmention_links(body, target_url)
 

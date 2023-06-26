@@ -11,7 +11,10 @@ defmodule Libmention.Outgoing.ProxyTest do
     conn =
       :get
       |> conn("/sent", "")
-      |> Router.call(table: Proxy.proxy_table())
+      |> Router.call(
+        webmentions_table: Proxy.webmentions_table(),
+        discovery_table: Proxy.discovery_table()
+      )
 
     assert conn.state == :sent
     assert conn.status == 200
