@@ -13,6 +13,7 @@ A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
   * [ ] Decline
   * [ ] Verify
   * [ ] Block
+  * [x] See Sent
 
 ## Usage
 All aspects of the library can be used piecemeal or as a supervised system.
@@ -56,7 +57,7 @@ Add `libmention` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:libmention, "~> 0.1.0"}
+    {:libmention, "~> 0.1.2"}
   ]
 end
 ```

@@ -38,7 +38,8 @@ defmodule Libmention.MixProject do
         "mix.exs",
         "README.md",
         "CHANGELOG.md",
-        "LICENSE"
+        "LICENSE",
+        "libmention.png"
       ]
     ]
   end
@@ -53,11 +54,10 @@ defmodule Libmention.MixProject do
   defp deps do
     [
       {:plug_cowboy, "~> 2.0"},
-      {:ex_doc, "~> 0.29"},
-      {:recon, "~> 2.5"},
       {:telemetry, "~> 1.2"},
       {:req, "~> 0.3"},
       {:floki, "~> 0.34.3"},
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.2", only: [:test]},
