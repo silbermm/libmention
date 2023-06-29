@@ -10,6 +10,8 @@ defmodule Libmention.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       package: package(),
+      name: "libmention",
+      source_url: "https://github.com/silbermm/libmention",
       docs: docs()
     ]
   end
@@ -69,10 +71,21 @@ defmodule Libmention.MixProject do
     [
       main: "Libmention",
       api_reference: false,
+      extra_section: "GUIDES",
       extras: [
+        "guides/examples/using_with_nimblepublisher.md",
+        "guides/examples/setting_up_persistance_with_ecto.md",
         "README.md": [filename: "readme", title: "Readme"],
         "CHANGELOG.md": [filename: "changelog", title: "Changelog"],
         LICENSE: [filename: "LICENSE", title: "License"]
+      ],
+      groups_for_extras: [
+        "Examples": Path.wildcard("guides/examples/*.md")
+      ],
+      groups_for_modules: [
+        "Sending": [Libmention.Outgoing, Libmention.Outgoing.Proxy],
+        "Receiving": [],
+        "Behaviours": [Libmention.StorageApi]
       ],
       logo: "libmention_simple.png",
       authors: ["Matt Silbernagel"],
