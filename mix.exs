@@ -80,12 +80,12 @@ defmodule Libmention.MixProject do
         LICENSE: [filename: "LICENSE", title: "License"]
       ],
       groups_for_extras: [
-        "Examples": Path.wildcard("guides/examples/*.md")
+        Examples: Path.wildcard("guides/examples/*.md")
       ],
       groups_for_modules: [
-        "Sending": [Libmention.Outgoing, Libmention.Outgoing.Proxy],
-        "Receiving": [],
-        "Behaviours": [Libmention.StorageApi]
+        Sending: [Libmention.Outgoing, Libmention.Outgoing.Proxy],
+        Receiving: [],
+        Behaviours: [Libmention.StorageApi]
       ],
       logo: "libmention_simple.png",
       authors: ["Matt Silbernagel"],
