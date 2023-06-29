@@ -10,7 +10,7 @@ defmodule Libmention.Outgoing.Proxy.HandleDiscover do
 
     _ = :ets.insert(table, {for, %{timestamp: DateTime.utc_now(), method: :head}})
 
-    send_resp(conn, 200, valid_link_response(for))
+    send_resp(conn, 200, "ok")
   end
 
   def call(%{method: "GET"} = conn, _opts) do
@@ -19,12 +19,12 @@ defmodule Libmention.Outgoing.Proxy.HandleDiscover do
 
     _ = :ets.insert(table, {for, %{timestamp: DateTime.utc_now(), method: :get}})
 
-    send_resp(conn, 200, "ok")
+    send_resp(conn, 200, valid_link_response(for))
   end
 
   defp valid_link_response(target) do
     ~s"""
-    <link href="#{target}/webmention" rel="webmention"  
+    <a href="#{target}/webmention" rel="webmention"> </a>
     """
   end
 end
