@@ -1,4 +1,4 @@
-![Libmention Logo](./libmention.png "libmention")
+![Libmention Logo](assets/libmention.png "libmention")
 
 [![Hex.pm](https://img.shields.io/hexpm/v/libmention?style=flat-square)](https://hexdocs.pm/libmention/readme.html)
 
@@ -52,6 +52,8 @@ When the process is done,
 
 ### Receiving
 
+_work in progress_
+
 <!-- MDOC !-->
 
 ## Installation
@@ -61,7 +63,7 @@ Add `libmention` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:libmention, "~> 0.1.2"}
+    {:libmention, "~> 0.1.4"}
   ]
 end
 ```

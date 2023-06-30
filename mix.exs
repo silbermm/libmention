@@ -72,18 +72,19 @@ defmodule Libmention.MixProject do
 
   defp docs do
     [
-      main: "Libmention",
+      main: "readme",
+      assets: "assets",
       api_reference: false,
       extra_section: "GUIDES",
       extras: [
-        "guides/examples/using_with_nimblepublisher.md",
-        "guides/examples/setting_up_persistance_with_ecto.md",
-        "README.md": [filename: "readme", title: "Readme"],
+        "guides/examples/sending/using_with_nimblepublisher.md",
+        "guides/examples/sending/setting_up_persistance_with_ecto.md",
+        "README.md": [filename: "readme", title: "README"],
         "CHANGELOG.md": [filename: "changelog", title: "Changelog"],
         LICENSE: [filename: "LICENSE", title: "License"]
       ],
       groups_for_extras: [
-        Examples: Path.wildcard("guides/examples/*.md")
+        "Sending Examples": Path.wildcard("guides/examples/sending/*.md")
       ],
       groups_for_modules: [
         Sending: [Libmention.Outgoing, Libmention.Outgoing.Proxy],
