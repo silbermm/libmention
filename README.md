@@ -1,5 +1,7 @@
 ![Libmention Logo](./libmention.png "libmention")
 
+[![Hex.pm](https://img.shields.io/hexpm/v/libmention?style=flat-square)](https://hexdocs.pm/libmention/readme.html)
+
 <!-- MDOC !-->
 
 A [Webmention](https://www.w3.org/TR/webmention/) implementation for Elixir
