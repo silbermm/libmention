@@ -24,3 +24,6 @@ libmention-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+/priv/plts/dialyzer.plt
+/priv/plts/dialyzer.plt.hash

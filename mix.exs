@@ -12,7 +12,10 @@ defmodule Libmention.MixProject do
       package: package(),
       name: "libmention",
       source_url: "https://github.com/silbermm/libmention",
-      docs: docs()
+      docs: docs(),
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ]
     ]
   end
 
