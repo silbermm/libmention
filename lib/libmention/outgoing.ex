@@ -1,9 +1,9 @@
 defmodule Libmention.Outgoing do
   @moduledoc """
-  See [Sending Webmentions](https://www.w3.org/TR/webmention/#sending-webmentions) for the full spec.
-
   Functions for finding links in an html document, discovering webmention support, and sending webmentions
   from a `source_url` to a `target_url`.
+
+  See [Sending Webmentions](https://www.w3.org/TR/webmention/#sending-webmentions) for the full spec.
   """
   alias Libmention.HttpApi
 

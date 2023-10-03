@@ -22,7 +22,14 @@ defmodule Libmention.Supervisor do
   * outgoing webmentions (See "Outgoing Opts" section)
 
   ### Incoming opts
-
+  To accept webmentions, use the `incoming` key to configure receiving options.
+  ```elixir
+  incoming: [
+    storage: Libmention.EtsStorage    
+  ]
+  ```
+  Options include:
+    *
 
   ### Outgoing opts
   If you desire to send webmentions from your site, an `outgoing` key should be configured which
@@ -51,6 +58,7 @@ defmodule Libmention.Supervisor do
   @impl true
   def init(args) do
     outgoing_opts = Keyword.get(args, :outgoing, nil)
+    incoming_opts = Keyword.get(args, :incoming, nil)
 
     children = []
 
@@ -58,6 +66,16 @@ defmodule Libmention.Supervisor do
       if outgoing_opts do
         outgoing_opts = Keyword.put_new(outgoing_opts, :storage, Libmention.EtsStorage)
         children ++ [Libmention.OutgoingSupervisor.child_spec(outgoing_opts)]
+      else
+        children
+      end
+
+    children =
+      if incoming_opts do
+        incoming_opts = Keyword.put_new(incoming_opts, :storage, Libmention.EtsStorage)
+        children ++ [Libmention.IncomingSupervisor.child_spec(incoming_opts)]
+      else
+        children
       end
 
     Supervisor.init(children, strategy: :one_for_one)
