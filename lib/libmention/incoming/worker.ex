@@ -1,7 +1,7 @@
 defmodule Libmention.Incoming.Worker do
   @moduledoc false
 
-  use GenServer, restart: :temporary 
+  use GenServer, restart: :transient
   alias __MODULE__
 
   defstruct [:opts, :source, :target]

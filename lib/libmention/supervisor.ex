@@ -23,13 +23,31 @@ defmodule Libmention.Supervisor do
 
   ### Incoming opts
   To accept webmentions, use the `incoming` key to configure receiving options.
+
   ```elixir
   incoming: [
-    storage: Libmention.EtsStorage    
+    storage: Libmention.EtsStorage
   ]
   ```
   Options include:
-    *
+    * storage - Module - The storage module that implements `Libmention.StorageApi`. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
+
+  You will also want o add route to your router that forwards traffic to the provided WebMentionPlug.
+
+  ```
+  # my_web/router.ex
+  scope /webmentions do
+    forward "/", Libmention.Incoming.ReceiverPlug
+  end
+  ```
+  
+  Finally, you'll need to add a `<link>` or `<a>` element in your html with a rel value of `webmention`
+  that points to the above route.
+  ```html
+  <head>
+    <link href="https://myblog.com/webmentions" rel="webmention">
+  </head>
+  ```
 
   ### Outgoing opts
   If you desire to send webmentions from your site, an `outgoing` key should be configured which
