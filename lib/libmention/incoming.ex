@@ -8,5 +8,5 @@ defmodule Libmention.Incoming do
   defmodule Error do
     defexception [:message]
   end
-  
+
 end
