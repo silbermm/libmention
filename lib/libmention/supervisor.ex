@@ -26,21 +26,23 @@ defmodule Libmention.Supervisor do
 
   ```elixir
   incoming: [
+    receiver: MyApp.Receiver,
     storage: Libmention.EtsStorage
   ]
   ```
   Options include:
     * storage - Module - The storage module that implements `Libmention.StorageApi`. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
+    * receiver - Module - The module that implements `Libmention.Incoming.Receiver`. This is a required option for receiving webmentions. See the `Libmention.Incoming.Receiver` for more options.
 
-  You will also want o add route to your router that forwards traffic to the provided WebMentionPlug.
+  You will also want o add route to your router that forwards traffic to `Libmention.Incoming.ReceiverPlug`.
 
   ```
   # my_web/router.ex
   scope /webmentions do
-    forward "/", Libmention.Incoming.ReceiverPlug
+    forward "/", Libmention.Incoming.ReceiverPlug, receiver: MyApp.Receiver
   end
   ```
-  
+
   Finally, you'll need to add a `<link>` or `<a>` element in your html with a rel value of `webmention`
   that points to the above route.
   ```html

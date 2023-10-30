@@ -21,17 +21,12 @@ defmodule Libmention.Incoming.WorkerSupervisor do
 
   @doc """
   """
-  @spec process_webmention(source(), target()) ::
+  @spec process_webmention(source(), target(), pid()) ::
           {:ok, pid()} | :ignore | {:error, term()} | {:ok, pid(), term()}
-  def process_webmention(source, target) do
-    case DynamicSupervisor.start_child(__MODULE__, Libmention.Incoming.Worker) do
-      {:ok, pid} ->
-        Libmention.Incoming.Worker.process(pid, source, target)
-        {:ok, pid}
-
-      error ->
-        error
-    end
+  def process_webmention(source, target, receiver) do
+    DynamicSupervisor.start_child(
+      __MODULE__,
+      {Libmention.Incoming.Worker, source: source, target: target, receiver: receiver}
+    )
   end
-
 end

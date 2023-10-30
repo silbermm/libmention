@@ -9,7 +9,21 @@ defmodule Libmention.IncomingSupervisor do
 
   @impl true
   def init(args) do
-    children = [Libmention.Incoming.WorkerSupervisor.child_spec(args)]
+    receiver = Keyword.get(args, :receiver)
+
+    children =
+      if receiver do
+        [receiver]
+      else
+        raise "a receiver module is required for accepting webmentions"
+      end
+
+    children =
+      children ++
+        [
+          Libmention.Incoming.WorkerSupervisor.child_spec(args)
+        ]
+
     Supervisor.init(children, strategy: :one_for_one)
   end
 end
