@@ -55,7 +55,8 @@ defmodule Libmention.Incoming.ReceiverPlug do
          {:ok, target_uri} <- URI.new(target),
          {:ok, %Req.Response{status: 200}} <- Req.get(URI.to_string(source_uri)),
          :ok <- receiver.validate(target_uri) do
-      id = receiver.queue(source_uri, target_uri)
+
+      id = Libmention.Incoming.Receiver.queue(receiver, source_uri, target_uri)
 
       conn
       |> Plug.Conn.put_resp_header("Location", "#{path}/#{id}")

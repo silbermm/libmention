@@ -110,7 +110,12 @@ defmodule Libmention.Incoming.Receiver do
         # default to a queue, but allow for options
         # to store in the DB
         timeout = Keyword.get(opts, :timeout, @timeout)
-        state = %{queue: :queue.new(), opts: %{timeout: timeout}}
+        storage = Keyword.get(opts, :storage)
+
+        # load the queue up from the storage
+        dbg(storage.all_pending_incoming())
+
+        state = %{queue: :queue.new(), opts: %{timeout: timeout, storage: storage}}
         {:ok, state, {:continue, :loop}}
       end
 
@@ -135,8 +140,8 @@ defmodule Libmention.Incoming.Receiver do
       @impl GenServer
       def handle_info(:process_queue, %{queue: queue} = state) do
         # process the queue
-        # take from the front of the queue
         updated_queue =
+          # take from the front of the queue
           case :queue.out(queue) do
             {{:value, webmention_data}, updated_queue} ->
               _ =
@@ -151,7 +156,6 @@ defmodule Libmention.Incoming.Receiver do
             {:empty, updated_queue} ->
               updated_queue
           end
-        dbg updated_queue
 
         state = %{state | queue: updated_queue}
         loop(state)
@@ -163,9 +167,29 @@ defmodule Libmention.Incoming.Receiver do
       end
 
       @impl GenServer
-      def handle_call({:queue, target_url, source_url}, _ = from, %{queue: queue} = state) do
+      def handle_call(
+            {:queue, target_url, source_url},
+            _ = from,
+            %{queue: queue, opts: opts} = state
+          ) do
+
+        dbg "queing stuff"
         id = :erlang.phash2(URI.to_string(target_url) <> URI.to_string(source_url))
+
+        # add it to the queue
         queue = :queue.in(%{id: id, target_url: target_url, source_url: source_url}, queue)
+
+        # add it to the db
+        res = opts.storage.save(%{
+          source_url: URI.to_string(source_url),
+          target_url: URI.to_string(target_url),
+          direction: :in,
+          status: :pending,
+          sha: ""
+        })
+
+        dbg res
+
         state = %{state | queue: queue}
         {:reply, id, state}
       end

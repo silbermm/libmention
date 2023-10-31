@@ -24,6 +24,7 @@ defmodule Libmention.Incoming.WorkerSupervisor do
   @spec process_webmention(source(), target(), pid()) ::
           {:ok, pid()} | :ignore | {:error, term()} | {:ok, pid(), term()}
   def process_webmention(source, target, receiver) do
+    dbg "processing webmention"
     DynamicSupervisor.start_child(
       __MODULE__,
       {Libmention.Incoming.Worker, source: source, target: target, receiver: receiver}

@@ -88,8 +88,12 @@ defmodule Libmention.MixProject do
       ],
       groups_for_modules: [
         Sending: [Libmention.Outgoing, Libmention.Outgoing.Proxy],
-        Receiving: [],
-        Behaviours: [Libmention.StorageApi]
+        Receiving: [
+          Libmention.Incoming,
+          Libmention.Incoming.Receiver,
+          Libmention.Incoming.ReceiverPlug
+        ],
+        Persistance: [Libmention.StorageApi]
       ],
       logo: "libmention_simple.png",
       authors: ["Matt Silbernagel"],

@@ -10,10 +10,11 @@ defmodule Libmention.IncomingSupervisor do
   @impl true
   def init(args) do
     receiver = Keyword.get(args, :receiver)
+    storage = Keyword.get(args, :storage)
 
     children =
       if receiver do
-        [receiver]
+        [{receiver, storage: storage}]
       else
         raise "a receiver module is required for accepting webmentions"
       end

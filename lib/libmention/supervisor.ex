@@ -20,6 +20,13 @@ defmodule Libmention.Supervisor do
   A keyword list of options is accepted for configuring one or both of
   * incoming webmentions (See "Incoming Opts" section)
   * outgoing webmentions (See "Outgoing Opts" section)
+  * global options that apply to both incoming and outgoing (See "Global Opts" section)
+
+  ### Global opts
+  Global options apply to both incoming and outgoing functionality.
+  Currently only `storage` is supported, which determines how the webmentions are stored:
+
+    * storage - Module - The storage module that implements `Libmention.StorageApi`. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
 
   ### Incoming opts
   To accept webmentions, use the `incoming` key to configure receiving options.
@@ -27,16 +34,14 @@ defmodule Libmention.Supervisor do
   ```elixir
   incoming: [
     receiver: MyApp.Receiver,
-    storage: Libmention.EtsStorage
   ]
   ```
   Options include:
-    * storage - Module - The storage module that implements `Libmention.StorageApi`. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
     * receiver - Module - The module that implements `Libmention.Incoming.Receiver`. This is a required option for receiving webmentions. See the `Libmention.Incoming.Receiver` for more options.
 
   You will also want o add route to your router that forwards traffic to `Libmention.Incoming.ReceiverPlug`.
 
-  ```
+  ```elixir
   # my_web/router.ex
   scope /webmentions do
     forward "/", Libmention.Incoming.ReceiverPlug, receiver: MyApp.Receiver
@@ -57,7 +62,6 @@ defmodule Libmention.Supervisor do
   ```elixir
   outgoing: [
     user_agent: "",
-    storage: Libmention.EtsStorage,
     proxy: [
       port: 8082,
       host: "localhost"
@@ -66,17 +70,40 @@ defmodule Libmention.Supervisor do
   ```
   Options include:
     * user_agent - String - Customize the HTTP User Agent used when fetching the target URL. Defaults to "libmention-Webmention-Discovery"
-    * storage    - Module - The storage behaviour module to use when sending webmentions. Defaults to Libmention.EtsStorage. See `Libmention.StorageApi` for more options.
     * proxy      - Keyword List - This is useful for local development only. If enabled, it starts a Plug application on the requested port `proxy: [port: 8082]` that all sent webmentions go to and shows a dashboard with their payloads. See `Libmention.Outgoing.Proxy` for a full explanation and other options available.
+
+
+  ## Example
+  ```elixir
+  opts = [
+    storage: MyApp.WebMentions.Store,
+    incoming: [
+      receiver: MyApp.Receiver,
+    ],
+    outgoing: [
+      user_agent: "",
+      proxy: [
+        port: 8082,
+        host: "localhost"
+      ]
+    ]
+  ]
+
+  children  = [{Libmention.Supervisor, opts}]
+  Supervisor.start_link(children, [strategy: :one_for_one])
+  ```
   """
   use Supervisor
 
+  @doc false
   def start_link(init_arg) do
     Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
   @impl true
   def init(args) do
+    storage_opt = Keyword.get(args, :storage, Libmention.EtsStorage)
+
     outgoing_opts = Keyword.get(args, :outgoing, nil)
     incoming_opts = Keyword.get(args, :incoming, nil)
 
@@ -84,7 +111,7 @@ defmodule Libmention.Supervisor do
 
     children =
       if outgoing_opts do
-        outgoing_opts = Keyword.put_new(outgoing_opts, :storage, Libmention.EtsStorage)
+        outgoing_opts = Keyword.put_new(outgoing_opts, :storage, storage_opt)
         children ++ [Libmention.OutgoingSupervisor.child_spec(outgoing_opts)]
       else
         children
@@ -92,7 +119,7 @@ defmodule Libmention.Supervisor do
 
     children =
       if incoming_opts do
-        incoming_opts = Keyword.put_new(incoming_opts, :storage, Libmention.EtsStorage)
+        incoming_opts = Keyword.put_new(incoming_opts, :storage, storage_opt)
         children ++ [Libmention.IncomingSupervisor.child_spec(incoming_opts)]
       else
         children
@@ -103,6 +130,8 @@ defmodule Libmention.Supervisor do
 
   @doc """
   Starts a process that parses, validates and sends webmentions.
+
+  Pass in the target_url and the raw html that is being sent.
   """
   def send(url, html), do: Libmention.Outgoing.WorkerSupervisor.process_content(url, html)
 end

@@ -16,7 +16,7 @@ defmodule Libmention.Incoming.ReceiverTest do
       id = Libmention.Incoming.Receiver.queue(receiver, target_uri, source_uri)
       saved_queue = :sys.get_state(Libmention.Incoming.ReceiverTest.FakeReceiver).queue
 
-      assert %{source_url: %URI{host: "source.com"}, target_url: %URI{host: "target.com"}} =
+      assert %{id: ^id, source_url: %URI{host: "source.com"}, target_url: %URI{host: "target.com"}} =
                :queue.get(saved_queue)
     end
 

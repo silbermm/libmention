@@ -32,5 +32,17 @@ defmodule Libmention.EtsStorage do
     !Enum.empty?(res)
   end
 
+  @impl true
+  def all_pending_incoming() do
+    fun =
+      :ets.fun2ms(fn {_, entity}
+                     when :erlang.map_get(:direction, entity) == :out and
+                            :erlang.map_get(:state, entity) == :pending ->
+        entity
+      end)
+
+    :ets.select(table_name(), fun)
+  end
+
   def table_name, do: :webmentions
 end
